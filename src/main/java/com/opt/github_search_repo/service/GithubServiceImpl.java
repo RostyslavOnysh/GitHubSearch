@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
@@ -126,13 +127,15 @@ public class GithubServiceImpl implements GithubService {
                     if (ex.getStatusCode() == HttpStatus.FORBIDDEN) {
                         log.warn("Returning cached data due to rate limit: {}", ex.getMessage());
                         return Flux.fromIterable(cachedRepos);
+                    } else if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        log.warn("User or resource not found:: {}", ex.getMessage());
+                        return Flux.error(ex);
                     }
                     return Flux.empty();
                 })
                 .doOnComplete(() -> log.info("Successfully fetched repositories for user: {}", username));
     }
 
-    // Caching methods
     private void putBranchesInCache(String key, List<BranchInfo> branches) {
         try {
             String serializedData = objectMapper.writeValueAsString(branches);
@@ -177,7 +180,6 @@ public class GithubServiceImpl implements GithubService {
         }
     }
 
-    // Fallback method for branch fetching
     public Flux<BranchInfo> fallbackGetBranches(String username, String repoName, Throwable throwable) {
         log.warn("Fallback triggered for getBranches for repository {}/{}. Reason: {}", username, repoName, throwable.getMessage());
         return Flux.empty();
