@@ -2,7 +2,7 @@ FROM openjdk:21-jdk-slim
 
 WORKDIR /app
 
-COPY target/GitHub_Search_repo-0.0.1-SNAPSHOT.jar app.jar
+COPY target/github_search_repo-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 

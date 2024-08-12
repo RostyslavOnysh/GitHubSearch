@@ -1,19 +1,42 @@
 package com.opt.github_search_repo.service;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.opt.github_search_repo.dto.RepositoryInfo;
 
 import java.util.List;
 
+@JsonSerialize
+@JsonDeserialize
 public class WrapperValue {
-    @JsonProperty("repositories")
-    private final List<RepositoryInfo> repositories;
+    private String name;
+    private String commitSha;
 
-    public WrapperValue(List<RepositoryInfo> repositories) {
-        this.repositories = List.copyOf(repositories);
+    public WrapperValue() {
     }
 
-    public List<RepositoryInfo> getRepositories() {
-        return repositories;
+    @JsonCreator
+    public WrapperValue(@JsonProperty("name") String name,
+                        @JsonProperty("commitSha") String commitSha) {
+        this.name = name;
+        this.commitSha = commitSha;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCommitSha() {
+        return commitSha;
+    }
+
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
     }
 }
