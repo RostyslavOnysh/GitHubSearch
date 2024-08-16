@@ -1,6 +1,6 @@
-package com.opt.github_search_repo.exception;
+package com.opt.githubSearchRepo.exception;
 
-import com.opt.github_search_repo.controllers.GithubController;
+import com.opt.githubSearchRepo.controllers.GithubController;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

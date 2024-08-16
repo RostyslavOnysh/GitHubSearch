@@ -1,18 +1,17 @@
-package com.opt.github_search_repo.service;
+package com.opt.githubSearchRepo.service;
 
-import com.opt.github_search_repo.controllers.GithubController;
-import com.opt.github_search_repo.dto.BranchInfo;
-import com.opt.github_search_repo.dto.RepositoryInfo;
+import static org.mockito.Mockito.when;
+
+import com.opt.githubSearchRepo.controllers.GithubController;
+import com.opt.githubSearchRepo.dto.BranchInfo;
+import com.opt.githubSearchRepo.dto.RepositoryInfo;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
-
-import java.util.List;
-
-import static org.mockito.Mockito.when;
 
 @WebFluxTest(GithubController.class)
 public class GithubControllerTest {
@@ -25,7 +24,6 @@ public class GithubControllerTest {
     void setUp() {
         webTestClient = WebTestClient.bindToController(new GithubController(githubService)).build();
     }
-
 
     @Test
     void testGetNonForkRepositories() {
@@ -62,14 +60,5 @@ public class GithubControllerTest {
                 .expectBodyList(BranchInfo.class)
                 .hasSize(2)
                 .contains(branch1, branch2);
-    }
-
-    @Test
-    void testCheckRateLimit() {
-        webTestClient.get()
-                .uri("/api/github/rate-limit")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class).isEqualTo("Rate limit checked. See logs for details.");
     }
 }

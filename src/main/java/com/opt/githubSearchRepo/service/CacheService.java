@@ -1,4 +1,4 @@
-package com.opt.github_search_repo.service;
+package com.opt.githubSearchRepo.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

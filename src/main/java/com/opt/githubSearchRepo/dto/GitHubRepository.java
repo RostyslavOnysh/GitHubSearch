@@ -1,4 +1,4 @@
-package com.opt.github_search_repo.dto;
+package com.opt.githubSearchRepo.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,5 +8,5 @@ public record GitHubRepository(
         @JsonProperty("fork") boolean fork
 ) {
 
-    public static record Owner(@JsonProperty("login") String login) {}
+    public record Owner(@JsonProperty("login") String login) {}
 }
