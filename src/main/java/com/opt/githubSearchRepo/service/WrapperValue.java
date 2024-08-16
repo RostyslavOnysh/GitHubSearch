@@ -1,12 +1,9 @@
-package com.opt.github_search_repo.service;
+package com.opt.githubSearchRepo.service;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.opt.github_search_repo.dto.RepositoryInfo;
-
-import java.util.List;
 
 @JsonSerialize
 @JsonDeserialize

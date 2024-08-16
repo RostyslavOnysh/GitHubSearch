@@ -1,4 +1,4 @@
-package com.opt.github_search_repo;
+package com.opt.githubSearchRepo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
