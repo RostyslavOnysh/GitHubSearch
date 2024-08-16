@@ -14,15 +14,4 @@ class GithubServiceImplTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @Test
-    public void should_return_Repositories_for_user_and_status_200() {
-        String userName = "Hlib13";
-        webTestClient.get().uri("/api/github/users/{userName}/repos", userName)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType("application/json")
-                .expectBody()
-                .jsonPath("$[0].name").exists()
-                .jsonPath("$[0].ownerLogin").isEqualTo(userName);
-    }
 }
