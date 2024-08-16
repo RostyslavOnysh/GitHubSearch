@@ -29,7 +29,8 @@ public class GithubController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "403", description = "Rate limit exceeded or access forbidden")
     })
-    @GetMapping(value = "/users/{username}/repos",produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/users/{username}/repos",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public Flux<RepositoryInfo> getNonForkRepositories(@PathVariable String username) {
         return githubService.getNonForkRepositories(username);
     }
@@ -41,8 +42,10 @@ public class GithubController {
             @ApiResponse(responseCode = "404", description = "Repository or user not found"),
             @ApiResponse(responseCode = "403", description = "Rate limit exceeded or access forbidden")
     })
-    @GetMapping(value = "/users/{username}/repos/{repoName}/branches",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<BranchInfo> getBranches(@PathVariable String username, @PathVariable String repoName) {
+    @GetMapping(value = "/users/{username}/repos/{repoName}/branches",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public Flux<BranchInfo> getBranches(@PathVariable String username,
+                                        @PathVariable String repoName) {
         return githubService.getBranches(username, repoName);
     }
 }

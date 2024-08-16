@@ -9,13 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.NotAcceptableStatusException;
+import org.springframework.web.server.ResponseStatusException;
 
 @ControllerAdvice(assignableTypes = GithubController.class)
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(FeignException.NotFound.class)
     public ResponseEntity<ErrorResponse> handleFeignNotFoundGithubUserException() {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), "This user does not exist");
         log.warn("This user does not exist");
@@ -69,5 +71,20 @@ public class GlobalExceptionHandler {
                 "GitHub user or resource not found!");
         log.warn("WebClient user or resource not found: {}", exception.getMessage());
         return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(NotAcceptableStatusException.class)
+    public ResponseEntity<ErrorResponse> handleNotAcceptable(NotAcceptableStatusException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(406, "Not acceptable format");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(406, "Not acceptable format");
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
     }
 }
