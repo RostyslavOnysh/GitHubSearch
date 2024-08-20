@@ -7,23 +7,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3  # Оновлено до останньої версії v3
+      - uses: actions/checkout@v3
       - name: Set up JDK 21
-        uses: actions/setup-java@v3  # Оновлено до останньої версії v3
+        uses: actions/setup-java@v3
         with:
-          java-version: '21'  # Встановлено Java 21
-          distribution: 'temurin'  # Використовується Temurin для OpenJDK
-          cache: maven  # Кешування залежностей Maven
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
 
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots verify
 
       - name: Run Checkstyle
-        run: mvn checkstyle:check  # Запуск перевірки Checkstyle
+        run: mvn checkstyle:check
 
       - name: Upload Checkstyle Report
-        if: always()  # Завжди намагатися завантажити звіти, навіть у разі помилок
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: checkstyle-report
-          path: target/checkstyle-result.xml  # Звіт Checkstyle
+          path: target/checkstyle-result.xml
