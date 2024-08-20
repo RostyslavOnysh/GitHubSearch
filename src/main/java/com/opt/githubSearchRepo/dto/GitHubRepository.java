@@ -7,6 +7,5 @@ public record GitHubRepository(
         @JsonProperty("owner") Owner owner,
         @JsonProperty("fork") boolean fork
 ) {
-
     public record Owner(@JsonProperty("login") String login) {}
 }
