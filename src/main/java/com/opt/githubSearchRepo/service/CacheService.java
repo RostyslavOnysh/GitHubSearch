@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -31,9 +35,6 @@ public class CacheService {
     public <T> T getFromCache(String key, TypeReference<T> typeReference) {
         try {
             String data = (String) redisTemplate.opsForValue().get(key);
-            if (data == null) {
-                return null;
-            }
             T result = objectMapper.readValue(data, typeReference);
             log.info("Deserialized data from cache: {}", result);
             return result;
