@@ -31,6 +31,9 @@ public class CacheService {
     public <T> T getFromCache(String key, TypeReference<T> typeReference) {
         try {
             String data = (String) redisTemplate.opsForValue().get(key);
+            if (data == null) {
+                return null;
+            }
             T result = objectMapper.readValue(data, typeReference);
             log.info("Deserialized data from cache: {}", result);
             return result;
