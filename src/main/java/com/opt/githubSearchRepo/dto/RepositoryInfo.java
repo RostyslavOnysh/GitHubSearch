@@ -6,5 +6,4 @@ import java.util.List;
 public record RepositoryInfo(
         @JsonProperty("name") String name,
         @JsonProperty("ownerLogin") String ownerLogin,
-        @JsonProperty("branches") List<BranchInfo> branches
-) {}
+        @JsonProperty("branches") List<BranchInfo> branches) {}
