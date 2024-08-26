@@ -13,7 +13,9 @@ services:
     environment:
       REDIS_PASSWORD: 13289812
   app:
+    container_name: "app"
     build: .
+    image: "github-search-app:latest"
     ports:
       - "8080:8080"
     depends_on:
@@ -27,4 +29,5 @@ networks:
 
 volumes:
   redis-data:
+    name: "github-search-app-redis-data"
     driver: local
