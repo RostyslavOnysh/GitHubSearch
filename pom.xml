@@ -14,7 +14,7 @@
     <name>GitHub_Search_repo</name>
     <description>GitHub_Search_repo</description>
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <maven.checkstyle.plugin.version>3.6.3</maven.checkstyle.plugin.version>
         <maven.checkstyle.plugin.configLocation>
