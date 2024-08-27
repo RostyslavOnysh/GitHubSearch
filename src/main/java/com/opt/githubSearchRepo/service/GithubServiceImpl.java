@@ -1,6 +1,5 @@
 package com.opt.githubSearchRepo.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.opt.githubSearchRepo.dto.BranchInfo;
 import com.opt.githubSearchRepo.dto.GitHubBranch;
 import com.opt.githubSearchRepo.dto.GitHubRepository;
@@ -9,10 +8,8 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import java.time.Duration;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -43,31 +40,31 @@ public class GithubServiceImpl implements GithubService {
         log.info("Fetching branches for repository: {}/{}", username, repoName);
         String cacheKey = username + "-" + repoName;
 
-        List<BranchInfo> cachedBranches = cacheService.getFromCache(cacheKey, new TypeReference<List<BranchInfo>>() {});
-        if (cachedBranches != null) {
-            log.info("Returning cached branches for repository: {}/{}", username, repoName);
-            return Flux.fromIterable(cachedBranches);
-        }
-
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/repos/{username}/{repoName}/branches").build(username, repoName))
-                .retrieve()
-                .bodyToFlux(GitHubBranch.class)
-                .parallel(4)
-                .runOn(parallelScheduler)
-                .map(branch -> new BranchInfo(branch.name(), branch.commit().sha()))
-                .sequential()
-                .timeout(Duration.ofSeconds(5))
-                .doOnNext(branch -> log.info("Fetched branch: {}", branch.name()))
-                .collectList()
-                .doOnNext(branches -> cacheService.putInCache(cacheKey, branches))
-                .flatMapMany(Flux::fromIterable)
-                .onErrorResume(WebClientResponseException.class, ex -> {
-                    log.error("WebClient error fetching branches: {}", ex.getMessage());
-                    return Flux.empty();
-                })
-                .doOnComplete(()
-                        -> log.info("Successfully fetched branches for repository: {}/{}", username, repoName));
+        return cacheService.getFromCacheAsFlux(cacheKey, BranchInfo.class)
+                .switchIfEmpty(
+                        webClient.get()
+                                .uri(uriBuilder ->
+                                        uriBuilder.path("/repos/{username}/{repoName}/branches")
+                                                .build(username, repoName))
+                                .retrieve()
+                                .bodyToFlux(GitHubBranch.class)
+                                .parallel(4)
+                                .runOn(parallelScheduler)
+                                .map(branch -> new BranchInfo(branch.name(),
+                                        branch.commit().sha()))
+                                .sequential()
+                                .timeout(Duration.ofSeconds(5))
+                                .collectList()
+                                .doOnNext(branches ->
+                                        cacheService.putInCacheAsFlux(cacheKey, branches))
+                                .flatMapMany(Flux::fromIterable)
+                                .onErrorResume(WebClientResponseException.class, ex -> {
+                                    log.error("WebClient error fetching branches: {}", ex.getMessage());
+                                    return Flux.empty();
+                                })
+                )
+                .doOnComplete(() ->
+                        log.info("Successfully fetched branches for repository: {}/{}", username, repoName));
     }
 
     @Override
@@ -76,40 +73,29 @@ public class GithubServiceImpl implements GithubService {
         log.info("Fetching non-fork repositories for user: {}", username);
 
         String cacheKey = "repos-" + username;
-        List<RepositoryInfo> cachedRepos = cacheService
-                .getFromCache(cacheKey, new TypeReference<List<RepositoryInfo>>() {});
-        if (cachedRepos != null) {
-            log.info("Returning cached repositories for user: {}", username);
-            return Flux.fromIterable(cachedRepos);
-        }
 
-        return webClient.get()
-                .uri("/users/{username}/repos", username)
-                .retrieve()
-                .bodyToFlux(GitHubRepository.class)
-                .filter(repo -> !repo.fork())
-                .flatMap(repo -> getBranches(username, repo.name())
-                        .collectList()
-                        .map(branches -> new RepositoryInfo(repo.name(), repo.owner().login(), branches))
-                        .subscribeOn(parallelScheduler))
-                .timeout(Duration.ofSeconds(5))
-                .doOnNext(repoInfo -> cacheService.putInCache(cacheKey, List.of(repoInfo)))
-                .onErrorResume(WebClientResponseException.class, ex -> {
-                    if (ex.getStatusCode() == HttpStatus.FORBIDDEN) {
-                        log.warn("Returning cached data due to rate limit: {}", ex.getMessage());
-                        return Flux.error(ex);
-                    } else if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
-                        log.warn("User or resource not found:: {}", ex.getMessage());
-                        return Flux.error(ex);
-                    }
-                    return Flux.empty();
-                })
+        return cacheService.getFromCacheAsFlux(cacheKey, RepositoryInfo.class)
+                .switchIfEmpty(
+                        webClient.get()
+                                .uri("/users/{username}/repos", username)
+                                .retrieve()
+                                .bodyToFlux(GitHubRepository.class)
+                                .filter(repo -> !repo.fork())
+                                .flatMap(repo -> getBranches(username, repo.name())
+                                        .collectList()
+                                        .map(branches ->
+                                                new RepositoryInfo(repo.name(),
+                                                        repo.owner().login(), branches))
+                                        .subscribeOn(parallelScheduler))
+                                .timeout(Duration.ofSeconds(5))
+                                .collectList()
+                                .doOnNext(repos -> cacheService.putInCacheAsFlux(cacheKey, repos))
+                                .flatMapMany(Flux::fromIterable)
+                                .onErrorResume(WebClientResponseException.class, ex -> {
+                                    log.error("WebClient error fetching repositories: {}", ex.getMessage());
+                                    return Flux.empty();
+                                })
+                )
                 .doOnComplete(() -> log.info("Successfully fetched repositories for user: {}", username));
-    }
-
-    public Flux<BranchInfo> fallbackGetBranches(String username, String repoName, Throwable throwable) {
-        log.warn("Fallback triggered for getBranches for repository {}/{}. Reason: {}",
-                username, repoName, throwable.getMessage());
-        return Flux.empty();
     }
 }
