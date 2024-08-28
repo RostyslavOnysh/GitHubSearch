@@ -10,5 +10,12 @@ case "$1" in
   "logs:app") docker-compose logs app ;;
   "logs:redis") docker-compose logs redis ;;
   "stop") scripts/stop.sh ;;
-  *) docker-compose "$1"
+
+  # Kubernetes specific cases
+  "buildK") scripts/buildK.sh ;;
+  "clearK") scripts/clearK.sh ;;
+  "runK") scripts/runK.sh ;;
+  "stopK") scripts/stopK.sh ;;
+
+  *) docker-compose "$1" ;;
 esac
