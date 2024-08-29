@@ -12,7 +12,9 @@ data:
     spring.cache.type=redis
     spring.data.redis.ssl.enabled=false
 
-    # Resilience4j Configuration
+    spring.r2dbc.url=r2dbc:postgresql://postgres:5432/testDB
+    spring.r2dbc.username=admin
+    spring.r2dbc.password=13289812
 
     # Circuit Breaker
     resilience4j.circuitbreaker.instances.githubService.registerHealthIndicator=true

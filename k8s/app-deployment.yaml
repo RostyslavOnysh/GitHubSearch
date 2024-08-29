@@ -23,6 +23,8 @@ spec:
                 name: app-config
             - secretRef:
                 name: redis-secret
+            - secretRef:
+                name: postgres-secret
           volumeMounts:
             - name: app-config-volume
               mountPath: /config/application.properties

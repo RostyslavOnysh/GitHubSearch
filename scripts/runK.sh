@@ -19,6 +19,9 @@ kubectl apply -f k8s/redis-deployment.yaml
 kubectl apply -f k8s/redis-pv-pvc.yaml
 kubectl apply -f k8s/redis-secret.yaml
 kubectl apply -f k8s/app-deployment.yaml
+kubectl apply -f k8s/postgres-deployment.yaml
+kubectl apply -f k8s/postgres-pv-pvc.yaml
+kubectl apply -f k8s/postgres-secret.yaml1
 
 # Перевірка стану сервісів
 echo "Waiting for pods to be ready..."

@@ -12,6 +12,21 @@ services:
       - redis-data:/data
     environment:
       REDIS_PASSWORD: 13289812
+
+  postgres:
+    image: postgres:latest
+    container_name: "postgres"
+    restart: always
+    environment:
+      POSTGRES_DB: testDB
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 13289812
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
   app:
     container_name: "app"
     build: .
@@ -20,6 +35,7 @@ services:
       - "8080:8080"
     depends_on:
       - redis
+      - postgres
     networks:
       - redis-network
 
@@ -30,4 +46,7 @@ networks:
 volumes:
   redis-data:
     name: "github-search-app-redis-data"
+    driver: local
+  postgres_data:
+    name: "github-search-app-postgres-data"
     driver: local
