@@ -24,7 +24,7 @@ public class GithubServiceImpl implements GithubService {
     private static final String GITHUB_SERVICE = "githubService";
     private final WebClient webClient;
     private final CacheService cacheService;
-    private final Scheduler parallelScheduler = Schedulers.newParallel("custom-parallel-scheduler", 20);
+    private final Scheduler parallelScheduler = Schedulers.newParallel("custom-parallel-scheduler", 10);
 
     public GithubServiceImpl(WebClient.Builder webClientBuilder, CacheService cacheService) {
         this.webClient = webClientBuilder.baseUrl("https://api.github.com").build();
@@ -48,7 +48,7 @@ public class GithubServiceImpl implements GithubService {
                                                 .build(username, repoName))
                                 .retrieve()
                                 .bodyToFlux(GitHubBranch.class)
-                                .parallel(4)
+                                .parallel(10)
                                 .runOn(parallelScheduler)
                                 .map(branch -> new BranchInfo(branch.name(),
                                         branch.commit().sha()))
@@ -56,7 +56,7 @@ public class GithubServiceImpl implements GithubService {
                                 .timeout(Duration.ofSeconds(5))
                                 .collectList()
                                 .doOnNext(branches ->
-                                        cacheService.putInCacheAsFlux(cacheKey, branches))
+                                        cacheService.putInCacheAsync(cacheKey, branches))
                                 .flatMapMany(Flux::fromIterable)
                                 .onErrorResume(WebClientResponseException.class, ex -> {
                                     log.error("WebClient error fetching branches: {}", ex.getMessage());

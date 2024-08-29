@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -37,11 +39,21 @@ public class CacheService {
     }
 
     public <T> void putInCacheAsFlux(String key, List<T> data) {
-        try {
-            redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(data));
-            log.info("Successfully cached data for key: {}", key);
-        } catch (JsonProcessingException e) {
-            log.error("Error serializing data for caching with key {}: {}", key, e.getMessage());
+        if (!redisTemplate.hasKey(key)) {
+            try {
+                redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(data));
+                log.info("Successfully cached data for key: {}", key);
+            } catch (JsonProcessingException e) {
+                log.error("Error serializing data for caching with key {}: {}", key, e.getMessage());
+            }
+        } else {
+            log.info("Key {} already exists in cache. Skipping cache update.", key);
         }
+    }
+
+    @Async
+    public <T> CompletableFuture<Void> putInCacheAsync(String key, List<T> data) {
+        putInCacheAsFlux(key, data);
+        return CompletableFuture.completedFuture(null);
     }
 }
